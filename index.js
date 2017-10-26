@@ -223,7 +223,7 @@ SteamCommunity.prototype.oAuthLogin = function(steamguard, token, callback) {
 	}, "steamcommunity");
 };
 
-SteamCommunity_.prototype.loginToOtherSite = function(steam_link_to_login, callback) {
+SteamCommunity.prototype.loginToOtherSite = function(steam_link_to_login, callback) {
 	var self = this;
 
 	this.request.get(steam_link_to_login, function(err, response, body) {
