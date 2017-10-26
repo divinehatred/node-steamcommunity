@@ -4,6 +4,7 @@ var Request = require('request');
 var RSA = require('node-bignumber').Key;
 var hex2b64 = require('node-bignumber').hex2b64;
 var SteamID = require('steamid');
+var cheerio = require('cheerio');
 
 const USER_AGENT = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/56.0.2924.87 Safari/537.36";
 
@@ -220,6 +221,30 @@ SteamCommunity.prototype.oAuthLogin = function(steamguard, token, callback) {
 		self.setCookies(cookies);
 		callback(null, self.getSessionID(), cookies);
 	}, "steamcommunity");
+};
+
+SteamCommunity_.prototype.loginToOtherSite = function(steam_link_to_login, callback) {
+	var self = this;
+
+	this.request.get(steam_link_to_login, function(err, response, body) {
+		var $, formData;
+		$ = cheerio.load(body);
+		formData = {
+			"action": $("input[name='action']").attr("value"),
+			"openid.mode": $("input[name='openid.mode']").attr("value"),
+			"openidparams": $("input[name='openidparams']").attr("value"),
+			"nonce": $("input[name='nonce']").attr("value")
+		};
+		self.request.post({
+			url: "https://steamcommunity.com/openid/login",
+			formData: formData
+		}, function(err, response, body) {
+			if (response.statusCode === 302 && response.headers.location) {
+				return callback(response.headers.location);
+			}
+			return callback(false);
+		});
+	});
 };
 
 SteamCommunity.prototype._setCookie = function(cookie, secure) {
